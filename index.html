@@ -263,7 +263,79 @@
     .priority-card:nth-child(2) { animation-delay: 0.12s; }
     .priority-card:nth-child(3) { animation-delay: 0.19s; }
 
-    /* ---- Login screen ---- */
+    /* ---- Tab bar ---- */
+    .tab-bar {
+      display: flex;
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 20px;
+      gap: 4px;
+    }
+    .tab {
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      margin-bottom: -0.5px;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: #82C3FF; border-bottom-color: #82C3FF; }
+
+    /* ---- History screen ---- */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .metric-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 14px;
+    }
+    .metric-label { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-bottom: 6px; }
+    .metric-value { font-size: 24px; font-weight: 500; color: var(--text); }
+    .metric-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .chart-bar-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .chart-day { display: flex; align-items: center; gap: 8px; font-size: 11px; font-family: var(--mono); color: var(--text-muted); }
+    .chart-day-label { width: 28px; flex-shrink: 0; }
+    .chart-day-bar { flex: 1; height: 20px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+    .chart-day-fill { height: 100%; background: #82C3FF; border-radius: 4px; transition: width 0.6s ease; opacity: 0.8; }
+    .chart-day-pct { width: 32px; text-align: right; flex-shrink: 0; }
+    .repeat-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--r);
+    }
+    .repeat-count {
+      font-family: var(--mono); font-size: 11px; color: #82C3FF;
+      min-width: 28px;
+    }
+    .repeat-title { font-size: 12px; color: var(--text); flex: 1; }
+
+    /* ---- Slack screen ---- */
+    .slack-msg {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 14px;
+    }
+    .slack-channel { font-size: 11px; color: #82C3FF; font-family: var(--mono); margin-bottom: 6px; }
+    .slack-sender { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+    .slack-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .slack-time { font-size: 11px; color: var(--text-dim); font-family: var(--mono); margin-top: 6px; }
+    .slack-loading { text-align: center; padding: 40px 0; }
+
+    /* ---- Active focus screens ---- */
+    .focus-screens { display: contents; }
+
+        /* ---- Login screen ---- */
     .login-screen {
       display: none;
       flex: 1;
@@ -391,6 +463,11 @@
       </div>
     </div>
   </nav>
+  <div class="tab-bar" id="tab-bar" style="display:none;">
+    <button class="tab active" id="tab-focus" onclick="switchTab('focus')">Foco</button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">Histórico</button>
+    <button class="tab" id="tab-slack" onclick="switchTab('slack')">Slack</button>
+  </div>
 
   <!-- Screen: Login -->
   <div class="login-screen active" id="screen-login">
@@ -529,6 +606,54 @@
   </div>
 </div>
 
+  <!-- Screen: History -->
+  <div class="screen" id="screen-history">
+    <div>
+      <h1>Seu <strong>histórico</strong></h1>
+      <p class="sub">Últimos 7 dias de produtividade</p>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">TAXA MÉDIA</div>
+        <div class="metric-value" id="hist-avg">—</div>
+        <div class="metric-sub">de conclusão semanal</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">OVERRIDES</div>
+        <div class="metric-value" id="hist-overrides">—</div>
+        <div class="metric-sub">substituições esta semana</div>
+      </div>
+    </div>
+
+    <div>
+      <p class="sub" style="margin-bottom:10px;">Conclusão por dia</p>
+      <div class="chart-bar-wrap" id="hist-chart"></div>
+    </div>
+
+    <div>
+      <p class="sub" style="margin-bottom:10px;">Prioridades que mais se repetem</p>
+      <div id="hist-repeats" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Screen: Slack -->
+  <div class="screen" id="screen-slack">
+    <div>
+      <h1>Suas <strong>menções</strong></h1>
+      <p class="sub">Mensagens do Slack que precisam de atenção</p>
+    </div>
+    <div id="slack-content">
+      <div class="slack-loading">
+        <div class="loader"></div>
+        <p class="loading-text">buscando menções...</p>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="loadSlackMentions()" style="flex:1;">Atualizar menções</button>
+    </div>
+  </div>
+
 <div id="toast"></div>
 
 <script type="module">
@@ -573,6 +698,7 @@
     state.accessToken = null
     showScreen("screen-login")
     document.getElementById("user-bar").style.display = "none"
+    document.getElementById("tab-bar").style.display = "none"
   }
 
   async function checkAuth() {
@@ -865,11 +991,125 @@
     const loggedIn = await checkAuth()
     if (loggedIn) {
       document.getElementById("user-name-display") && (document.getElementById("user-name-display").textContent = state.userName)
+      document.getElementById("tab-bar").style.display = "flex"
       showScreen("screen-signals")
       await loadSignals()
     } else {
       showScreen("screen-login")
     }
+  }
+
+  // ---- Tab navigation ----
+
+  window.switchTab = function(tab) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"))
+    document.getElementById("tab-" + tab).classList.add("active")
+
+    if (tab === "focus") {
+      // Show current focus screen (signals or priorities or confirmed)
+      const active = ["screen-signals","screen-priorities","screen-confirmed","screen-checkin","screen-done"]
+        .find(s => document.getElementById(s)?.classList.contains("was-active")) || "screen-signals"
+      showScreen(active)
+    } else if (tab === "history") {
+      showScreen("screen-history")
+      loadHistory()
+    } else if (tab === "slack") {
+      showScreen("screen-slack")
+      loadSlackMentions()
+    }
+  }
+
+  // ---- History ----
+
+  async function loadHistory() {
+    // Mock data — replace with Supabase query when checkins are being saved
+    const days = [
+      { label: "Seg", pct: 100 },
+      { label: "Ter", pct: 67 },
+      { label: "Qua", pct: 33 },
+      { label: "Qui", pct: 100 },
+      { label: "Sex", pct: 67 },
+      { label: "Sáb", pct: 0 },
+      { label: "Dom", pct: 0 },
+    ]
+
+    const withData = days.filter(d => d.pct > 0)
+    const avg = withData.length > 0
+      ? Math.round(withData.reduce((s,d) => s + d.pct, 0) / withData.length)
+      : 0
+
+    document.getElementById("hist-avg").textContent = avg + "%"
+    document.getElementById("hist-overrides").textContent = "2"
+
+    document.getElementById("hist-chart").innerHTML = days.map(d =>
+      '<div class="chart-day">' +
+        '<span class="chart-day-label">' + d.label + '</span>' +
+        '<div class="chart-day-bar"><div class="chart-day-fill" style="width:' + d.pct + '%"></div></div>' +
+        '<span class="chart-day-pct">' + d.pct + '%</span>' +
+      '</div>'
+    ).join("")
+
+    const repeats = [
+      { title: "Revisar proposta com cliente", count: "3x" },
+      { title: "Responder mensagens urgentes no Slack", count: "2x" },
+      { title: "Preparar material para reunião", count: "2x" },
+    ]
+
+    document.getElementById("hist-repeats").innerHTML = repeats.map(r =>
+      '<div class="repeat-item">' +
+        '<span class="repeat-count">' + r.count + '</span>' +
+        '<span class="repeat-title">' + r.title + '</span>' +
+      '</div>'
+    ).join("")
+  }
+
+  // ---- Slack mentions ----
+
+  window.loadSlackMentions = async function() {
+    const el = document.getElementById("slack-content")
+    el.innerHTML = '<div class="slack-loading"><div class="loader"></div><p class="loading-text">buscando menções...</p></div>'
+
+    // Mock data — replace with real Slack API call after connecting token
+    await new Promise(r => setTimeout(r, 1200))
+
+    const mentions = [
+      { channel: "#produto", sender: "Rafael Orpinelli", text: "Bruno, preciso da sua decisão sobre o módulo de OEE antes da reunião de amanhã.", time: "ontem 18:42" },
+      { channel: "#vendas", sender: "Camila Santos", text: "Bruno você toparia fazer uma call rápida com o prospect da Voith esta semana?", time: "hoje 07:15" },
+      { channel: "#geral", sender: "Lucas Henrique", text: "Bruno qual o status do deploy do agente de design? O time está esperando.", time: "hoje 08:01" },
+    ]
+
+    if (mentions.length === 0) {
+      el.innerHTML = '<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:40px 0;">Nenhuma menção encontrada.</p>'
+      return
+    }
+
+    el.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px;">' +
+      mentions.map(m =>
+        '<div class="slack-msg">' +
+          '<div class="slack-channel">' + m.channel + '</div>' +
+          '<div class="slack-sender">' + m.sender + '</div>' +
+          '<div class="slack-text">' + m.text + '</div>' +
+          '<div class="slack-time">' + m.time + '</div>' +
+        '</div>'
+      ).join("") +
+    '</div>'
+  }
+
+  // Override showScreen to track focus screens for tab switching
+  const _origShowScreen = showScreen
+  function showScreen(id) {
+    const focusScreens = ["screen-signals","screen-priorities","screen-confirmed","screen-checkin","screen-done"]
+    if (focusScreens.includes(id)) {
+      focusScreens.forEach(s => {
+        const el = document.getElementById(s)
+        if (el) el.classList.remove("was-active")
+      })
+      const el = document.getElementById(id)
+      if (el) el.classList.add("was-active")
+    }
+    document.querySelectorAll(".screen, .login-screen").forEach(s => s.classList.remove("active"))
+    document.getElementById(id).classList.add("active")
+    window.scrollTo(0, 0)
   }
 
   init()
