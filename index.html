@@ -583,12 +583,15 @@
     if (!token) { initSlackScreen(); return }
     el.innerHTML = "<div class='loading-state'><div class='loader'></div><p class='loading-text'>buscando menções...</p></div>"
     try {
-      const res = await fetch("https://slack.com/api/search.messages?query=<@" + userId + ">&sort=timestamp&count=10", {
-        headers: { "Authorization": "Bearer " + token }
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch(SUPABASE_URL + "/functions/v1/slack-mentions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_KEY },
+        body: JSON.stringify({ slack_token: token, user_id: userId })
       })
       const data = await res.json()
-      if (!data.ok) throw new Error(data.error)
-      const messages = data.messages?.matches || []
+      if (!res.ok) throw new Error(data.error || "Erro ao buscar")
+      const messages = data.messages || []
       if (messages.length === 0) {
         el.innerHTML = "<p style='font-size:13px;color:var(--text-muted);padding:20px 0;text-align:center;'>Nenhuma menção encontrada.</p>"
         return
