@@ -593,18 +593,57 @@
       if (!res.ok) throw new Error(data.error || "Erro ao buscar")
       const messages = data.messages || []
       if (messages.length === 0) {
-        el.innerHTML = "<p style='font-size:13px;color:var(--text-muted);padding:20px 0;text-align:center;'>Nenhuma menção encontrada.</p>"
+        el.innerHTML = "<p style='font-size:13px;color:var(--text-muted);padding:20px 0;text-align:center;'>Nenhuma menção pendente.</p>"
         return
       }
+
+      // Clean message text: replace <@ID|Name> with @Name, <@ID> with @usuário
+      function cleanText(text) {
+        return text
+          .replace(/<@[A-Z0-9]+\|([^>]+)>/g, "@$1")
+          .replace(/<@[A-Z0-9]+>/g, "@usuário")
+          .replace(/<#[A-Z0-9]+\|([^>]+)>/g, "#$1")
+          .replace(/:[a-z_]+:/g, "")
+          .trim()
+      }
+
+      // Get clean channel name
+      function channelName(m) {
+        if (m.channel?.name) return "#" + m.channel.name
+        if (m.channel?.id) return "#canal"
+        return "#canal"
+      }
+
       el.innerHTML = "<div style='display:flex;flex-direction:column;gap:10px;'>" +
-        messages.map(m => {
+        messages.map((m, i) => {
           const ts = new Date(parseFloat(m.ts) * 1000)
           const time = ts.toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })
-          return "<div class='slack-msg'>" +
-            "<div class='slack-channel'>#" + (m.channel?.name || "canal") + "</div>" +
+          const text = cleanText(m.text || "")
+          const ch = channelName(m)
+          const permalink = m.permalink || ""
+          const replyId = "reply-" + i
+          const inputId = "input-" + i
+          return "<div class='slack-msg' id='msg-" + i + "'>" +
+            "<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;'>" +
+              "<div class='slack-channel'>" + ch + "</div>" +
+              "<span style='font-size:10px;font-family:var(--mono);color:var(--text-dim);background:rgba(232,112,96,0.12);color:var(--danger);padding:2px 7px;border-radius:4px;'>pendente</span>" +
+            "</div>" +
             "<div class='slack-sender'>" + (m.username || "usuário") + "</div>" +
-            "<div class='slack-text'>" + m.text.replace(/<@[A-Z0-9]+>/g, "@menção").slice(0, 200) + "</div>" +
-            "<div class='slack-time'>" + time + "</div>" +
+            "<div class='slack-text'>" + text.slice(0, 250) + (text.length > 250 ? "..." : "") + "</div>" +
+            "<div style='display:flex;align-items:center;justify-content:space-between;margin-top:8px;'>" +
+              "<div class='slack-time'>" + time + "</div>" +
+              "<div style='display:flex;gap:6px;'>" +
+                (permalink ? "<a href='" + permalink + "' target='_blank' style='font-size:11px;color:var(--accent);font-family:var(--mono);text-decoration:none;'>ver no Slack ↗</a>" : "") +
+                "<button onclick='toggleReply(" + i + ")' style='font-size:11px;font-family:var(--mono);color:var(--accent);background:none;border:none;cursor:pointer;'>responder</button>" +
+              "</div>" +
+            "</div>" +
+            "<div id='" + replyId + "' style='display:none;margin-top:10px;display:none;flex-direction:column;gap:8px;'>" +
+              "<textarea id='" + inputId + "' rows='2' placeholder='Digite sua resposta...' style='font-size:13px;'></textarea>" +
+              "<div style='display:flex;gap:8px;'>" +
+                "<button class='btn btn-primary' onclick='sendReply(" + i + ", "" + (m.channel?.id || m.channel) + "", "" + m.ts + "")' style='font-size:12px;padding:6px 14px;'>Enviar</button>" +
+                "<button class='btn' onclick='toggleReply(" + i + ")' style='font-size:12px;padding:6px 14px;'>Cancelar</button>" +
+              "</div>" +
+            "</div>" +
           "</div>"
         }).join("") +
       "</div>"
@@ -618,6 +657,38 @@
     const t = document.getElementById("toast")
     t.textContent = msg; t.classList.add("show")
     setTimeout(() => t.classList.remove("show"), 2800)
+  }
+
+  // ---- Slack reply ----
+  window.toggleReply = function(i) {
+    const el = document.getElementById("reply-" + i)
+    if (!el) return
+    el.style.display = el.style.display === "none" || el.style.display === "" ? "flex" : "none"
+    el.style.flexDirection = "column"
+  }
+
+  window.sendReply = async function(i, channelId, threadTs) {
+    const input = document.getElementById("input-" + i)
+    const text = input?.value.trim()
+    if (!text) return
+    const token = localStorage.getItem("slack_token")
+    if (!token) { toast("Slack não conectado"); return }
+    input.disabled = true
+    try {
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch(SUPABASE_URL + "/functions/v1/slack-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_KEY },
+        body: JSON.stringify({ slack_token: token, channel: channelId, text, thread_ts: threadTs })
+      })
+      if (!res.ok) throw new Error("Erro ao enviar")
+      toast("Resposta enviada!")
+      document.getElementById("msg-" + i).style.opacity = "0.4"
+      document.getElementById("msg-" + i).style.pointerEvents = "none"
+    } catch(e) {
+      toast("Erro: " + e.message)
+      input.disabled = false
+    }
   }
 
   // ---- Init ----
