@@ -640,7 +640,7 @@
             "<div id='" + replyId + "' style='display:none;margin-top:10px;display:none;flex-direction:column;gap:8px;'>" +
               "<textarea id='" + inputId + "' rows='2' placeholder='Digite sua resposta...' style='font-size:13px;'></textarea>" +
               "<div style='display:flex;gap:8px;'>" +
-                "<button class='btn btn-primary' onclick='sendReply(" + i + ", "" + (m.channel?.id || m.channel) + "", "" + m.ts + "")' style='font-size:12px;padding:6px 14px;'>Enviar</button>" +
+                "<button class='btn btn-primary' onclick='sendReply(" + i + ")' style='font-size:12px;padding:6px 14px;'>Enviar</button>" +
                 "<button class='btn' onclick='toggleReply(" + i + ")' style='font-size:12px;padding:6px 14px;'>Cancelar</button>" +
               "</div>" +
             "</div>" +
@@ -667,7 +667,7 @@
     el.style.flexDirection = "column"
   }
 
-  window.sendReply = async function(i, channelId, threadTs) {
+  window.sendReply = async function(i) {
     const input = document.getElementById("input-" + i)
     const text = input?.value.trim()
     if (!text) return
