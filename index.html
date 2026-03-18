@@ -261,8 +261,23 @@
   <!-- Slack -->
   <div class="screen" id="screen-slack">
     <div><h1>Suas <strong>menções</strong></h1><p class="sub">Mensagens do Slack que precisam de atenção</p></div>
-    <div id="slack-content"><div class="loading-state"><div class="loader"></div><p class="loading-text">buscando menções...</p></div></div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="loadSlackMentions()" style="flex:1;">Atualizar menções</button></div>
+    <div id="slack-connect" style="display:none;">
+      <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center;display:flex;flex-direction:column;gap:16px;">
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.6;">Conecte sua conta do Slack para ver as mensagens onde você foi mencionado.</p>
+        <button class="btn btn-primary" onclick="connectSlack()" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
+          Conectar com Slack
+        </button>
+        <p style="font-size:11px;color:var(--text-dim);font-family:var(--mono);">apenas leitura de menções • sem envio de mensagens</p>
+      </div>
+    </div>
+    <div id="slack-content"></div>
+    <div id="slack-actions" style="display:none;">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="loadSlackMentions()" style="flex:1;">Atualizar menções</button>
+        <button class="btn" onclick="disconnectSlack()">Desconectar</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -273,6 +288,9 @@
   const SUPABASE_KEY = "sb_publishable_FQpzc5wUH8Th21TABI4OXA_b5bD3Mhs"
   const REDIRECT_URL = "https://hosben.github.io/cogtive-focus/"
   const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly"
+  const SLACK_CLIENT_ID = "218424938598.10738923802897"
+  const SLACK_REDIRECT = "https://hosben.github.io/cogtive-focus/"
+  const SLACK_SCOPE = "search:read,users:read"
 
   const { createClient } = supabase
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY)
@@ -500,19 +518,95 @@
     ].map(r => "<div class='repeat-item'><span class='repeat-count'>" + r.count + "</span><span class='repeat-title'>" + r.title + "</span></div>").join("")
   }
 
-  // ---- Slack ----
+  // ---- Slack OAuth ----
+  window.connectSlack = function() {
+    const state = Math.random().toString(36).substring(2)
+    localStorage.setItem("slack_oauth_state", state)
+    const url = "https://slack.com/oauth/v2/authorize" +
+      "?client_id=" + SLACK_CLIENT_ID +
+      "&user_scope=" + SLACK_SCOPE +
+      "&redirect_uri=" + encodeURIComponent(SLACK_REDIRECT) +
+      "&state=" + state
+    window.location.href = url
+  }
+
+  window.disconnectSlack = function() {
+    localStorage.removeItem("slack_token")
+    localStorage.removeItem("slack_user_id")
+    initSlackScreen()
+    toast("Slack desconectado")
+  }
+
+  async function handleSlackCallback() {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get("code")
+    const state = params.get("state")
+    const savedState = localStorage.getItem("slack_oauth_state")
+    if (!code || state !== savedState) return
+    // Clear URL params
+    window.history.replaceState({}, "", window.location.pathname)
+    localStorage.removeItem("slack_oauth_state")
+    toast("Conectando Slack...")
+    try {
+      // Exchange code for token via Supabase Edge Function
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch(SUPABASE_URL + "/functions/v1/slack-oauth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_KEY },
+        body: JSON.stringify({ code, redirect_uri: SLACK_REDIRECT })
+      })
+      if (!res.ok) throw new Error("Erro ao conectar")
+      const data = await res.json()
+      localStorage.setItem("slack_token", data.access_token)
+      localStorage.setItem("slack_user_id", data.authed_user?.id || "")
+      toast("Slack conectado!")
+      initSlackScreen()
+      await loadSlackMentions()
+    } catch(e) {
+      toast("Erro: " + e.message)
+    }
+  }
+
+  function initSlackScreen() {
+    const token = localStorage.getItem("slack_token")
+    document.getElementById("slack-connect").style.display = token ? "none" : "block"
+    document.getElementById("slack-actions").style.display = token ? "flex" : "none"
+    if (token) loadSlackMentions()
+    else document.getElementById("slack-content").innerHTML = ""
+  }
+
   window.loadSlackMentions = async function() {
+    const token = localStorage.getItem("slack_token")
+    const userId = localStorage.getItem("slack_user_id")
     const el = document.getElementById("slack-content")
+    if (!token) { initSlackScreen(); return }
     el.innerHTML = "<div class='loading-state'><div class='loader'></div><p class='loading-text'>buscando menções...</p></div>"
-    await new Promise(r => setTimeout(r, 1000))
-    const mentions = [
-      { channel: "#produto", sender: "Rafael Orpinelli", text: "Bruno, preciso da sua decisão sobre o módulo de OEE antes da reunião de amanhã.", time: "ontem 18:42" },
-      { channel: "#vendas", sender: "Camila Santos", text: "Bruno você toparia fazer uma call rápida com o prospect da Voith esta semana?", time: "hoje 07:15" },
-      { channel: "#geral", sender: "Lucas Henrique", text: "Bruno qual o status do deploy do agente de design? O time está esperando.", time: "hoje 08:01" },
-    ]
-    el.innerHTML = "<div style='display:flex;flex-direction:column;gap:10px;'>" +
-      mentions.map(m => "<div class='slack-msg'><div class='slack-channel'>" + m.channel + "</div><div class='slack-sender'>" + m.sender + "</div><div class='slack-text'>" + m.text + "</div><div class='slack-time'>" + m.time + "</div></div>").join("") +
-    "</div>"
+    try {
+      const res = await fetch("https://slack.com/api/search.messages?query=<@" + userId + ">&sort=timestamp&count=10", {
+        headers: { "Authorization": "Bearer " + token }
+      })
+      const data = await res.json()
+      if (!data.ok) throw new Error(data.error)
+      const messages = data.messages?.matches || []
+      if (messages.length === 0) {
+        el.innerHTML = "<p style='font-size:13px;color:var(--text-muted);padding:20px 0;text-align:center;'>Nenhuma menção encontrada.</p>"
+        return
+      }
+      el.innerHTML = "<div style='display:flex;flex-direction:column;gap:10px;'>" +
+        messages.map(m => {
+          const ts = new Date(parseFloat(m.ts) * 1000)
+          const time = ts.toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })
+          return "<div class='slack-msg'>" +
+            "<div class='slack-channel'>#" + (m.channel?.name || "canal") + "</div>" +
+            "<div class='slack-sender'>" + (m.username || "usuário") + "</div>" +
+            "<div class='slack-text'>" + m.text.replace(/<@[A-Z0-9]+>/g, "@menção").slice(0, 200) + "</div>" +
+            "<div class='slack-time'>" + time + "</div>" +
+          "</div>"
+        }).join("") +
+      "</div>"
+    } catch(e) {
+      el.innerHTML = "<p style='font-size:13px;color:var(--danger);padding:20px 0;text-align:center;'>Erro ao buscar menções: " + e.message + "</p>"
+    }
   }
 
   // ---- Helpers ----
@@ -525,8 +619,23 @@
   // ---- Init ----
   async function init() {
     const session = await checkAuth()
-    if (session) { showScreen("screen-signals"); await loadSignals() }
-    else showScreen("screen-login")
+    if (session) {
+      showScreen("screen-signals")
+      await loadSignals()
+      await handleSlackCallback()
+    } else {
+      showScreen("screen-login")
+    }
+  }
+
+  // Update switchTab to init slack screen
+  const _origSwitchTab = window.switchTab
+  window.switchTab = function(tab) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"))
+    document.getElementById("tab-" + tab).classList.add("active")
+    if (tab === "focus") showScreen("screen-signals")
+    else if (tab === "history") { showScreen("screen-history"); loadHistory() }
+    else if (tab === "slack") { showScreen("screen-slack"); initSlackScreen() }
   }
 
   init()
