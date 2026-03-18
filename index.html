@@ -4,441 +4,134 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0a0a0a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Cogtive Focus</title>
   <link rel="manifest" href="/manifest.json">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0a0a0a;
-      --surface: #111111;
-      --surface2: #1a1a1a;
-      --border: rgba(255,255,255,0.07);
-      --border-hover: rgba(255,255,255,0.14);
-      --text: #f0ede8;
-      --text-muted: rgba(240,237,232,0.45);
-      --text-dim: rgba(240,237,232,0.25);
-      --accent: #e8d5b0;
-      --accent-dim: rgba(232,213,176,0.12);
-      --danger: #e87060;
-      --danger-dim: rgba(232,112,96,0.12);
-      --info: #6090e8;
-      --info-dim: rgba(96,144,232,0.12);
-      --warning: #e8b060;
-      --warning-dim: rgba(232,176,96,0.12);
-      --success: #60c878;
-      --success-dim: rgba(96,200,120,0.12);
-      --font: 'DM Sans', sans-serif;
-      --mono: 'DM Mono', monospace;
-      --r: 10px;
-      --r-lg: 16px;
+      --bg: #0a0a0a; --surface: #111111; --surface2: #1a1a1a;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8; --text-muted: rgba(240,237,232,0.45); --text-dim: rgba(240,237,232,0.25);
+      --accent: #82C3FF; --danger: #e87060; --warning: #e8b060; --success: #60c878;
+      --font: "DM Sans", sans-serif; --mono: "DM Mono", monospace;
+      --r: 10px; --r-lg: 16px;
     }
-
-    html, body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 15px;
-      line-height: 1.6;
-      min-height: 100dvh;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    #app {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ---- Nav ---- */
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 20px 0;
-    }
-    .nav-logo {
-      font-family: var(--mono);
-      font-size: 13px;
-      color: var(--accent);
-      letter-spacing: 0.08em;
-    }
-    .nav-date {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--mono);
-      text-align: right;
-      line-height: 1.6;
-    }
-
-    /* ---- Screens ---- */
+    html, body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.6; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
+    #app { max-width: 480px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 0; }
+    .nav-date { font-size: 11px; color: var(--text-muted); font-family: var(--mono); text-align: right; line-height: 1.6; }
+    .user-bar { display: flex; align-items: center; gap: 8px; margin-top: 4px; justify-content: flex-end; }
+    .user-avatar { width: 22px; height: 22px; border-radius: 50%; background: rgba(130,195,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--accent); overflow: hidden; }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-email { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+    .btn-signout { font-size: 11px; color: var(--text-dim); background: none; border: none; cursor: pointer; font-family: var(--mono); padding: 0; }
+    .tab-bar { display: none; border-bottom: 0.5px solid var(--border); padding: 0 20px; gap: 4px; margin-top: 12px; }
+    .tab { font-family: var(--font); font-size: 13px; color: var(--text-muted); background: none; border: none; padding: 10px 14px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -0.5px; }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
     .screen { display: none; flex: 1; padding: 24px 20px 40px; flex-direction: column; gap: 20px; }
     .screen.active { display: flex; }
-
-    /* ---- Headings ---- */
+    .login-screen { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; gap: 32px; }
+    .login-screen.active { display: flex; }
+    .login-box { width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    .login-title { font-size: 22px; font-weight: 300; text-align: center; line-height: 1.4; }
+    .login-title strong { font-weight: 500; }
+    .login-sub { font-size: 13px; color: var(--text-muted); text-align: center; line-height: 1.6; margin-top: 8px; }
+    .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 20px; background: var(--accent); color: #0a0a0a; border: none; border-radius: var(--r-lg); font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
+    .btn-google:hover { opacity: 0.9; }
+    .login-divider { width: 100%; display: flex; align-items: center; gap: 12px; color: var(--text-dim); font-size: 12px; }
+    .login-divider::before, .login-divider::after { content: ""; flex: 1; height: 0.5px; background: var(--border); }
     h1 { font-size: 22px; font-weight: 300; color: var(--text); line-height: 1.3; }
     h1 strong { font-weight: 500; }
     .sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-
-    /* ---- Signal cards ---- */
     .signal-list { display: flex; flex-direction: column; gap: 8px; }
-    .signal-card {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 12px 14px;
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--r);
-    }
-    .signal-icon {
-      width: 28px; height: 28px; border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; flex-shrink: 0; font-family: var(--mono);
-      margin-top: 1px;
-    }
-    .signal-icon.cal { background: var(--info-dim); color: var(--info); }
-    .signal-icon.slack { background: var(--warning-dim); color: var(--warning); }
-    .signal-icon.manual { background: var(--accent-dim); color: var(--accent); }
-    .signal-title { font-size: 13px; font-weight: 500; color: var(--text); }
+    .signal-card { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r); }
+    .signal-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; font-family: var(--mono); margin-top: 1px; }
+    .signal-icon.cal { background: rgba(96,144,232,0.15); color: #6090e8; }
+    .signal-icon.slack { background: rgba(232,176,96,0.15); color: var(--warning); }
+    .signal-icon.manual { background: rgba(130,195,255,0.12); color: var(--accent); }
+    .signal-title { font-size: 13px; font-weight: 500; }
     .signal-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
     .urgency-bar { height: 2px; border-radius: 1px; background: var(--border); margin-top: 8px; }
-    .urgency-fill { height: 100%; border-radius: 1px; background: var(--danger); transition: width 0.6s ease; }
-
-    /* ---- Priority cards ---- */
+    .urgency-fill { height: 100%; border-radius: 1px; background: var(--danger); }
     .priority-list { display: flex; flex-direction: column; gap: 10px; }
-    .priority-card {
-      padding: 16px;
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--r-lg);
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      position: relative;
-      overflow: hidden;
-    }
-    .priority-card::before {
-      content: '';
-      position: absolute; left: 0; top: 0; bottom: 0;
-      width: 2px;
-      background: var(--border);
-      transition: background 0.2s;
-    }
+    .priority-card { padding: 16px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; overflow: hidden; }
+    .priority-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--border); transition: background 0.2s; }
     .priority-card:hover { border-color: var(--border-hover); background: var(--surface2); }
-    .priority-card.confirmed { border-color: rgba(96,200,120,0.3); background: var(--success-dim); }
+    .priority-card.confirmed { border-color: rgba(96,200,120,0.3); background: rgba(96,200,120,0.05); }
     .priority-card.confirmed::before { background: var(--success); }
-    .priority-card.dismissed { opacity: 0.35; pointer-events: none; }
-
     .p-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-    .p-rank {
-      font-family: var(--mono); font-size: 11px; color: var(--text-dim);
-      min-width: 18px; margin-top: 2px;
-    }
+    .p-rank { font-family: var(--mono); font-size: 11px; color: var(--text-dim); min-width: 18px; margin-top: 2px; }
     .p-title { font-size: 14px; font-weight: 500; flex: 1; }
-    .p-check { font-size: 15px; color: var(--success); transition: opacity 0.2s; opacity: 0; }
+    .p-check { font-size: 15px; color: var(--success); opacity: 0; transition: opacity 0.2s; }
     .priority-card.confirmed .p-check { opacity: 1; }
-
     .p-reason { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; padding-left: 26px; }
-
     .p-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-left: 26px; }
-    .badge {
-      font-size: 10px; font-family: var(--mono); font-weight: 500;
-      padding: 2px 8px; border-radius: 4px; letter-spacing: 0.03em;
-    }
-    .badge-danger { background: var(--danger-dim); color: var(--danger); }
-    .badge-info   { background: var(--info-dim);   color: var(--info); }
-    .badge-warning{ background: var(--warning-dim); color: var(--warning); }
-    .badge-success{ background: var(--success-dim); color: var(--success); }
+    .badge { font-size: 10px; font-family: var(--mono); font-weight: 500; padding: 2px 8px; border-radius: 4px; }
+    .badge-danger { background: rgba(232,112,96,0.15); color: var(--danger); }
+    .badge-info { background: rgba(96,144,232,0.15); color: #6090e8; }
+    .badge-warning { background: rgba(232,176,96,0.15); color: var(--warning); }
     .p-score { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
-
-    /* ---- Score bar ---- */
     .score-bar { height: 2px; border-radius: 1px; background: var(--border); margin-top: 10px; margin-left: 26px; }
-    .score-fill { height: 100%; border-radius: 1px; background: var(--accent); transition: width 0.8s ease; }
-
-    /* ---- Buttons ---- */
+    .score-fill { height: 100%; border-radius: 1px; background: var(--accent); }
     .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn {
-      font-family: var(--font); font-size: 13px; font-weight: 500;
-      padding: 9px 16px; border-radius: 8px; cursor: pointer;
-      border: 0.5px solid var(--border); background: transparent;
-      color: var(--text-muted); transition: all 0.15s;
-    }
+    .btn { font-family: var(--font); font-size: 13px; font-weight: 500; padding: 9px 16px; border-radius: 8px; cursor: pointer; border: 0.5px solid var(--border); background: transparent; color: var(--text-muted); transition: all 0.15s; }
     .btn:hover { background: var(--surface2); border-color: var(--border-hover); color: var(--text); }
-    .btn-primary {
-      background: #82C3FF; color: #0a0a0a;
-      border-color: #82C3FF; font-weight: 500;
-    }
+    .btn-primary { background: var(--accent); color: #0a0a0a; border-color: var(--accent); font-weight: 500; }
     .btn-primary:hover { opacity: 0.9; }
-
-    /* ---- Input ---- */
     .input-group { display: flex; flex-direction: column; gap: 6px; }
     .input-label { font-size: 12px; color: var(--text-muted); }
-    input[type="text"], textarea {
-      width: 100%; padding: 10px 12px;
-      background: var(--surface); border: 0.5px solid var(--border);
-      border-radius: var(--r); color: var(--text); font-family: var(--font); font-size: 13px;
-      outline: none; transition: border-color 0.15s;
-      resize: none;
-    }
+    input[type="text"], textarea { width: 100%; padding: 10px 12px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r); color: var(--text); font-family: var(--font); font-size: 13px; outline: none; transition: border-color 0.15s; resize: none; }
     input[type="text"]:focus, textarea:focus { border-color: var(--border-hover); }
     input[type="text"]::placeholder, textarea::placeholder { color: var(--text-dim); }
-
-    /* ---- Loading state ---- */
     .loading-state { text-align: center; padding: 40px 0; }
-    .loader {
-      width: 24px; height: 24px; border: 1.5px solid var(--border);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
-    }
+    .loader { width: 24px; height: 24px; border: 1.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { font-size: 13px; color: var(--text-muted); font-family: var(--mono); }
-
-    /* ---- Divider ---- */
     .divider { height: 0.5px; background: var(--border); }
-
-    /* ---- Override area ---- */
-    .override-area {
-      background: var(--surface); border: 0.5px solid var(--border);
-      border-radius: var(--r-lg); padding: 14px;
-      display: none; flex-direction: column; gap: 10px;
-    }
+    .override-area { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 14px; display: none; flex-direction: column; gap: 10px; }
     .override-area.open { display: flex; }
-
-    /* ---- Confirmation screen ---- */
     .confirmed-list { display: flex; flex-direction: column; gap: 8px; }
-    .confirmed-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 14px;
-      background: var(--surface); border: 0.5px solid var(--border);
-      border-radius: var(--r);
-    }
-    .confirmed-rank {
-      font-family: var(--mono); font-size: 12px; color: var(--success);
-      width: 20px; flex-shrink: 0;
-    }
-
-    /* ---- Check-in ---- */
-    .checkin-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 14px;
-      background: var(--surface); border: 0.5px solid var(--border);
-      border-radius: var(--r); cursor: pointer;
-      transition: border-color 0.15s;
-    }
+    .confirmed-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r); }
+    .confirmed-rank { font-family: var(--mono); font-size: 12px; color: var(--success); width: 20px; flex-shrink: 0; }
+    .checkin-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r); cursor: pointer; transition: border-color 0.15s; }
     .checkin-item.done { border-color: rgba(96,200,120,0.3); }
-    .checkin-box {
-      width: 18px; height: 18px; border: 1px solid var(--border);
-      border-radius: 4px; flex-shrink: 0; display: flex;
-      align-items: center; justify-content: center; font-size: 11px;
-      transition: all 0.15s;
-    }
+    .checkin-box { width: 18px; height: 18px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.15s; }
     .checkin-item.done .checkin-box { background: var(--success); border-color: var(--success); color: #000; }
-
-    /* ---- Add signal form ---- */
-    .add-signal-form {
-      background: var(--surface); border: 0.5px solid var(--border);
-      border-radius: var(--r-lg); padding: 14px;
-    }
-
-    /* ---- Toast ---- */
-    #toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-      background: var(--surface2); border: 0.5px solid var(--border-hover);
-      color: var(--text); font-size: 13px; padding: 10px 18px;
-      border-radius: 20px; transition: transform 0.3s ease;
-      pointer-events: none; white-space: nowrap; z-index: 100;
-    }
-    #toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ---- Animations ---- */
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in { animation: fadeIn 0.3s ease forwards; }
-    .priority-card { animation: fadeIn 0.3s ease both; }
-    .priority-card:nth-child(1) { animation-delay: 0.05s; }
-    .priority-card:nth-child(2) { animation-delay: 0.12s; }
-    .priority-card:nth-child(3) { animation-delay: 0.19s; }
-
-    /* ---- Tab bar ---- */
-    .tab-bar {
-      display: flex;
-      border-bottom: 0.5px solid var(--border);
-      padding: 0 20px;
-      gap: 4px;
-    }
-    .tab {
-      font-family: var(--font);
-      font-size: 13px;
-      color: var(--text-muted);
-      background: none;
-      border: none;
-      padding: 10px 14px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.15s;
-      margin-bottom: -0.5px;
-    }
-    .tab:hover { color: var(--text); }
-    .tab.active { color: #82C3FF; border-bottom-color: #82C3FF; }
-
-    /* ---- History screen ---- */
-    .metric-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .metric-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 14px;
-    }
+    .add-signal-form { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 14px; }
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .metric-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 14px; }
     .metric-label { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-bottom: 6px; }
-    .metric-value { font-size: 24px; font-weight: 500; color: var(--text); }
+    .metric-value { font-size: 24px; font-weight: 500; }
     .metric-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
     .chart-bar-wrap { display: flex; flex-direction: column; gap: 6px; }
     .chart-day { display: flex; align-items: center; gap: 8px; font-size: 11px; font-family: var(--mono); color: var(--text-muted); }
     .chart-day-label { width: 28px; flex-shrink: 0; }
     .chart-day-bar { flex: 1; height: 20px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
-    .chart-day-fill { height: 100%; background: #82C3FF; border-radius: 4px; transition: width 0.6s ease; opacity: 0.8; }
+    .chart-day-fill { height: 100%; background: var(--accent); border-radius: 4px; opacity: 0.8; }
     .chart-day-pct { width: 32px; text-align: right; flex-shrink: 0; }
-    .repeat-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px;
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--r);
-    }
-    .repeat-count {
-      font-family: var(--mono); font-size: 11px; color: #82C3FF;
-      min-width: 28px;
-    }
-    .repeat-title { font-size: 12px; color: var(--text); flex: 1; }
-
-    /* ---- Slack screen ---- */
-    .slack-msg {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 14px;
-    }
-    .slack-channel { font-size: 11px; color: #82C3FF; font-family: var(--mono); margin-bottom: 6px; }
-    .slack-sender { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+    .repeat-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r); }
+    .repeat-count { font-family: var(--mono); font-size: 11px; color: var(--accent); min-width: 28px; }
+    .repeat-title { font-size: 12px; flex: 1; }
+    .slack-msg { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 14px; }
+    .slack-channel { font-size: 11px; color: var(--accent); font-family: var(--mono); margin-bottom: 6px; }
+    .slack-sender { font-size: 12px; font-weight: 500; margin-bottom: 4px; }
     .slack-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
     .slack-time { font-size: 11px; color: var(--text-dim); font-family: var(--mono); margin-top: 6px; }
-    .slack-loading { text-align: center; padding: 40px 0; }
-
-    /* ---- Active focus screens ---- */
-    .focus-screens { display: contents; }
-
-        /* ---- Login screen ---- */
-    .login-screen {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-      gap: 32px;
-      min-height: 100dvh;
-    }
-    .login-screen.active { display: flex; }
-    .login-box {
-      width: 100%;
-      max-width: 360px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 24px;
-    }
-    .login-title {
-      font-size: 22px;
-      font-weight: 300;
-      text-align: center;
-      line-height: 1.4;
-    }
-    .login-title strong { font-weight: 500; }
-    .login-sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      text-align: center;
-      line-height: 1.6;
-    }
-    .btn-google {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 12px 20px;
-      background: #82C3FF;
-      color: #0a0a0a;
-      border: none;
-      border-radius: var(--r-lg);
-      font-family: var(--font);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .btn-google:hover { opacity: 0.9; }
-    .btn-google svg { flex-shrink: 0; }
-    .login-divider {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--text-dim);
-      font-size: 12px;
-    }
-    .login-divider::before,
-    .login-divider::after {
-      content: '';
-      flex: 1;
-      height: 0.5px;
-      background: var(--border);
-    }
-    .user-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .user-avatar {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: var(--accent-dim);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 500;
-      color: #82C3FF;
-      overflow: hidden;
-    }
-    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .user-name { font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
-    .btn-signout {
-      font-size: 11px;
-      color: var(--text-dim);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-family: var(--mono);
-      padding: 0;
-      margin-left: 4px;
-    }
-    .btn-signout:hover { color: var(--text-muted); }
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 0.5px solid var(--border-hover); color: var(--text); font-size: 13px; padding: 10px 18px; border-radius: 20px; transition: transform 0.3s ease; pointer-events: none; white-space: nowrap; z-index: 100; }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease forwards; }
   </style>
 </head>
 <body>
 <div id="app">
   <nav>
-    <a href="/" style="display:flex;align-items:center;text-decoration:none;"><svg width="196" height="22" viewBox="0 0 411 46" fill="none" style="display:block;" xmlns="http://www.w3.org/2000/svg">
+    <a href="/" style="display:flex;align-items:center;text-decoration:none;"><svg width="180" height="20" viewBox="0 0 411 46" fill="none" style="display:block;" xmlns="http://www.w3.org/2000/svg">
 <path d="M40.913 7.95605C41.5586 7.95605 41.8602 8.25763 41.8602 8.90332V13.1241C41.8602 13.7698 41.5586 14.1152 40.913 14.1152H21.7472C17.3112 14.1152 16.0198 15.4066 16.0198 19.9728V26.0882C16.0198 30.6531 17.3112 31.9883 21.7472 31.9883H40.913C41.5586 31.9883 41.8602 32.2899 41.8602 32.9356V37.1564C41.8602 37.8021 41.5586 38.1036 40.913 38.1036H21.4895C12.7901 38.1036 9.43018 35.0028 9.43018 26.7339V19.3258C9.43018 11.0569 12.7888 7.95605 21.4895 7.95605H40.913Z" fill="#82C3FF"/>
 <path d="M117.851 7.95605C118.496 7.95605 118.798 8.25763 118.798 8.90332V13.1241C118.798 13.7698 118.496 14.1152 117.851 14.1152H96.2736C91.8376 14.1152 90.5462 15.4066 90.5462 19.9728V26.1745C90.5462 30.7394 91.8376 32.0746 96.2736 32.0746H110.486C111.993 32.0746 112.64 31.3851 112.64 29.4481V25.9593C112.64 25.5714 112.511 25.4 112.123 25.4H99.5046C98.9015 25.4 98.5573 25.0558 98.5573 24.4089V21.1791C98.5573 20.5334 98.9015 20.188 99.5046 20.188H117.464C118.325 20.188 118.755 20.6185 118.755 21.4794V31.514C118.755 36.338 116.861 38.1036 113.415 38.1036H96.0158C87.3164 38.1036 83.9565 35.0028 83.9565 26.7339V19.3258C83.9565 11.0569 87.3152 7.95605 96.0158 7.95605H117.851Z" fill="#82C3FF"/>
 <path d="M148.581 7.95605C149.227 7.95605 149.572 8.25763 149.572 8.90332V13.1241C149.572 13.7698 149.228 14.1152 148.581 14.1152H138.647V37.1564C138.647 37.8021 138.346 38.1036 137.7 38.1036H133.005C132.359 38.1036 132.057 37.8021 132.057 37.1564V14.1152H122.123C121.478 14.1152 121.132 13.7711 121.132 13.1241V8.90332C121.132 8.25763 121.476 7.95605 122.123 7.95605H148.581Z" fill="#82C3FF"/>
@@ -454,45 +147,30 @@
 <path d="M356.435 39.8524C353.531 39.8524 351.125 39.2951 349.219 38.1804C347.312 37.0364 345.889 35.4818 344.951 33.5164C344.041 31.5511 343.587 29.3071 343.587 26.7844V6.98444H345.963V27.0924C345.963 29.1751 346.344 31.0231 347.107 32.6364C347.869 34.2204 349.028 35.4524 350.583 36.3324C352.137 37.2124 354.088 37.6524 356.435 37.6524C358.84 37.6524 360.805 37.2124 362.331 36.3324C363.885 35.4524 365.029 34.2204 365.763 32.6364C366.525 31.0524 366.907 29.2044 366.907 27.0924V6.98444H369.283V26.7844C369.283 29.3071 368.828 31.5511 367.919 33.5164C367.009 35.4818 365.601 37.0364 363.695 38.1804C361.817 39.2951 359.397 39.8524 356.435 39.8524Z" fill="#82C3FF"/>
 <path d="M389.514 39.8524C386.786 39.8524 384.513 39.4271 382.694 38.5764C380.875 37.6964 379.511 36.5084 378.602 35.0124C377.693 33.4871 377.238 31.7711 377.238 29.8644H379.614C379.614 31.3311 379.951 32.6511 380.626 33.8244C381.33 34.9978 382.415 35.9364 383.882 36.6404C385.349 37.3151 387.226 37.6524 389.514 37.6524C391.655 37.6524 393.445 37.3444 394.882 36.7284C396.319 36.1124 397.39 35.2764 398.094 34.2204C398.827 33.1351 399.194 31.8884 399.194 30.4804C399.194 28.7498 398.549 27.2831 397.258 26.0804C395.967 24.8484 394.002 24.1004 391.362 23.8364L387.534 23.5284C384.865 23.2938 382.753 22.4431 381.198 20.9764C379.643 19.5098 378.866 17.5884 378.866 15.2124C378.866 13.5111 379.262 11.9858 380.054 10.6364C380.846 9.25777 382.034 8.17244 383.618 7.38044C385.202 6.5591 387.153 6.14844 389.47 6.14844C391.817 6.14844 393.797 6.58844 395.41 7.46844C397.023 8.3191 398.241 9.47777 399.062 10.9444C399.913 12.3818 400.338 14.0098 400.338 15.8284H397.962C397.962 14.5084 397.669 13.2911 397.082 12.1764C396.495 11.0324 395.571 10.1084 394.31 9.40444C393.078 8.70044 391.465 8.34844 389.47 8.34844C387.534 8.34844 385.965 8.6711 384.762 9.31644C383.559 9.93244 382.665 10.7684 382.078 11.8244C381.521 12.8511 381.242 13.9804 381.242 15.2124C381.242 16.9724 381.799 18.3804 382.914 19.4364C384.058 20.4924 385.686 21.1231 387.798 21.3284L391.626 21.6364C393.767 21.8124 395.571 22.3111 397.038 23.1324C398.534 23.9244 399.663 24.9511 400.426 26.2124C401.189 27.4738 401.57 28.8964 401.57 30.4804C401.57 32.2698 401.101 33.8831 400.162 35.3204C399.223 36.7284 397.859 37.8431 396.07 38.6644C394.281 39.4564 392.095 39.8524 389.514 39.8524Z" fill="#82C3FF"/>
 </svg></a>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;">
       <span class="nav-date" id="nav-date"></span>
       <div class="user-bar" id="user-bar" style="display:none;">
         <div class="user-avatar" id="user-avatar"></div>
-        <span class="user-name" id="user-name-nav"></span>
-        <button class="btn-signout" onclick="signOut()">sair</button>
+        <span class="user-email" id="user-email"></span>
+        <button class="btn-signout" onclick="doSignOut()">sair</button>
       </div>
     </div>
   </nav>
-  <div class="tab-bar" id="tab-bar" style="display:none;">
+
+  <div class="tab-bar" id="tab-bar">
     <button class="tab active" id="tab-focus" onclick="switchTab('focus')">Foco</button>
     <button class="tab" id="tab-history" onclick="switchTab('history')">Histórico</button>
     <button class="tab" id="tab-slack" onclick="switchTab('slack')">Slack</button>
   </div>
 
-  <!-- Screen: Login -->
+  <!-- Login -->
   <div class="login-screen active" id="screen-login">
     <div class="login-box">
-      <div style="margin-bottom:8px;"><svg width="196" height="22" viewBox="0 0 411 46" fill="none" style="display:block;" xmlns="http://www.w3.org/2000/svg">
-<path d="M40.913 7.95605C41.5586 7.95605 41.8602 8.25763 41.8602 8.90332V13.1241C41.8602 13.7698 41.5586 14.1152 40.913 14.1152H21.7472C17.3112 14.1152 16.0198 15.4066 16.0198 19.9728V26.0882C16.0198 30.6531 17.3112 31.9883 21.7472 31.9883H40.913C41.5586 31.9883 41.8602 32.2899 41.8602 32.9356V37.1564C41.8602 37.8021 41.5586 38.1036 40.913 38.1036H21.4895C12.7901 38.1036 9.43018 35.0028 9.43018 26.7339V19.3258C9.43018 11.0569 12.7888 7.95605 21.4895 7.95605H40.913Z" fill="#82C3FF"/>
-<path d="M117.851 7.95605C118.496 7.95605 118.798 8.25763 118.798 8.90332V13.1241C118.798 13.7698 118.496 14.1152 117.851 14.1152H96.2736C91.8376 14.1152 90.5462 15.4066 90.5462 19.9728V26.1745C90.5462 30.7394 91.8376 32.0746 96.2736 32.0746H110.486C111.993 32.0746 112.64 31.3851 112.64 29.4481V25.9593C112.64 25.5714 112.511 25.4 112.123 25.4H99.5046C98.9015 25.4 98.5573 25.0558 98.5573 24.4089V21.1791C98.5573 20.5334 98.9015 20.188 99.5046 20.188H117.464C118.325 20.188 118.755 20.6185 118.755 21.4794V31.514C118.755 36.338 116.861 38.1036 113.415 38.1036H96.0158C87.3164 38.1036 83.9565 35.0028 83.9565 26.7339V19.3258C83.9565 11.0569 87.3152 7.95605 96.0158 7.95605H117.851Z" fill="#82C3FF"/>
-<path d="M148.581 7.95605C149.227 7.95605 149.572 8.25763 149.572 8.90332V13.1241C149.572 13.7698 149.228 14.1152 148.581 14.1152H138.647V37.1564C138.647 37.8021 138.346 38.1036 137.7 38.1036H133.005C132.359 38.1036 132.057 37.8021 132.057 37.1564V14.1152H122.123C121.478 14.1152 121.132 13.7711 121.132 13.1241V8.90332C121.132 8.25763 121.476 7.95605 122.123 7.95605H148.581Z" fill="#82C3FF"/>
-<path d="M157.55 7.95605C158.195 7.95605 158.497 8.25763 158.497 8.90332V37.1564C158.497 37.8021 158.195 38.1036 157.55 38.1036H152.898C152.253 38.1036 151.907 37.8021 151.907 37.1564V8.90332C151.907 8.25763 152.251 7.95605 152.898 7.95605H157.55Z" fill="#82C3FF"/>
-<path d="M166.969 7.95605C167.53 7.95605 167.745 8.12875 167.961 8.51668L180.579 31.688C180.708 31.9458 180.837 31.9896 181.096 31.9896H181.311C181.526 31.9896 181.655 31.947 181.784 31.688L194.231 8.51668C194.447 8.08622 194.706 7.95605 195.222 7.95605H200.865C201.554 7.95605 201.683 8.38651 201.382 8.94714L187.255 34.8314C185.834 37.4592 184.541 38.1049 182.733 38.1049H180.235C177.995 38.1049 176.746 37.4592 175.282 34.8314L160.984 8.94714C160.683 8.38651 160.812 7.95605 161.544 7.95605H166.971H166.969Z" fill="#82C3FF"/>
-<path d="M228.832 24.5802V21.1777C228.832 20.6545 228.547 20.2305 228.194 20.2305H216.636C215.651 20.2305 214.853 21.4162 214.853 22.879C214.853 24.3417 215.651 25.5274 216.636 25.5274H228.193C228.546 25.5274 228.831 25.1034 228.831 24.5802H228.832Z" fill="#82C3FF"/>
-<path d="M235.87 12.9953V8.90332C235.87 8.25763 235.525 7.95605 234.878 7.95605H215.928C207.229 7.95605 203.869 11.0569 203.869 19.3258V26.7339C203.869 35.0028 207.227 38.1036 215.928 38.1036H234.878C235.524 38.1036 235.87 37.8021 235.87 37.1564V33.0644C235.87 32.4187 235.525 32.1172 234.878 32.1172H216.057C211.578 32.1172 210.329 30.782 210.329 26.2596V25.5327V20.2177V19.8001C210.329 15.2777 211.578 13.9425 216.057 13.9425H234.878C235.524 13.9425 235.87 13.6409 235.87 12.9953Z" fill="#82C3FF"/>
-<path d="M50.7857 20.2306V19.8001C50.7857 15.2777 52.0771 13.9425 56.5132 13.9425H69.3045C73.7405 13.9425 75.0319 15.2777 75.0319 19.8001V20.2306H81.6215V19.3258C81.6215 11.0569 78.3055 7.95605 69.5623 7.95605H56.2541C47.5547 7.95605 44.1948 11.0569 44.1948 19.3258V20.2306H50.7845H50.7857Z" fill="#82C3FF"/>
-<path d="M75.0321 25.5264V26.2584C75.0321 30.7808 73.7407 32.116 69.3047 32.116H56.5133C52.0773 32.116 50.7859 30.7808 50.7859 26.2584V25.5264H44.1963V26.7327C44.1963 35.0016 47.5549 38.1025 56.2556 38.1025H69.5637C78.3069 38.1025 81.623 35.0016 81.623 26.7327V25.5264H75.0334H75.0321Z" fill="#82C3FF"/>
-<path d="M246.621 39.1044V6.98444H248.997V39.1044H246.621ZM248.161 23.7924V21.5924L262.813 21.5484V23.7044L248.161 23.7924ZM248.161 9.14044V6.98444L263.693 6.94044V9.14044H248.161Z" fill="#82C3FF"/>
-<path d="M284.843 39.8524C282.144 39.8524 279.768 39.3684 277.715 38.4004C275.691 37.4031 273.99 36.0978 272.611 34.4844C271.262 32.8418 270.235 31.0524 269.531 29.1164C268.856 27.1804 268.519 25.2444 268.519 23.3084V22.6044C268.519 20.5804 268.871 18.6004 269.575 16.6644C270.308 14.7284 271.364 12.9684 272.743 11.3844C274.151 9.7711 275.852 8.4951 277.847 7.55644C279.871 6.61777 282.203 6.14844 284.843 6.14844C287.454 6.14844 289.756 6.61777 291.751 7.55644C293.775 8.4951 295.476 9.7711 296.855 11.3844C298.263 12.9684 299.319 14.7284 300.023 16.6644C300.727 18.6004 301.079 20.5804 301.079 22.6044V23.3084C301.079 25.2444 300.727 27.1804 300.023 29.1164C299.348 31.0524 298.336 32.8418 296.987 34.4844C295.638 36.0978 293.951 37.4031 291.927 38.4004C289.903 39.3684 287.542 39.8524 284.843 39.8524ZM284.843 37.6524C287.043 37.6524 288.994 37.2418 290.695 36.4204C292.426 35.5991 293.878 34.4991 295.051 33.1204C296.254 31.7124 297.148 30.1431 297.735 28.4124C298.351 26.6524 298.659 24.8484 298.659 23.0004C298.659 21.0644 298.336 19.2164 297.691 17.4564C297.075 15.6964 296.166 14.1418 294.963 12.7924C293.79 11.4138 292.338 10.3284 290.607 9.53644C288.906 8.74444 286.984 8.34844 284.843 8.34844C282.672 8.34844 280.722 8.74444 278.991 9.53644C277.29 10.3284 275.838 11.4138 274.635 12.7924C273.432 14.1418 272.508 15.6964 271.863 17.4564C271.247 19.2164 270.939 21.0644 270.939 23.0004C270.939 24.8484 271.247 26.6524 271.863 28.4124C272.479 30.1431 273.374 31.7124 274.547 33.1204C275.75 34.4991 277.202 35.5991 278.903 36.4204C280.634 37.2418 282.614 37.6524 284.843 37.6524Z" fill="#82C3FF"/>
-<path d="M322.732 39.8524C319.945 39.8524 317.54 39.3538 315.516 38.3564C313.492 37.3298 311.835 36.0098 310.544 34.3964C309.283 32.7538 308.344 30.9644 307.728 29.0284C307.112 27.0631 306.804 25.1564 306.804 23.3084V22.6484C306.804 20.6538 307.112 18.6884 307.728 16.7524C308.373 14.7871 309.327 13.0124 310.588 11.4284C311.879 9.8151 313.507 8.5391 315.472 7.60044C317.437 6.63244 319.755 6.14844 322.424 6.14844C325.035 6.14844 327.323 6.63244 329.288 7.60044C331.283 8.5391 332.881 9.87377 334.084 11.6044C335.287 13.3058 336.02 15.3004 336.284 17.5884H333.864C333.6 15.5938 332.94 13.9071 331.884 12.5284C330.828 11.1498 329.479 10.1084 327.836 9.40444C326.223 8.70044 324.419 8.34844 322.424 8.34844C320.253 8.34844 318.347 8.74444 316.704 9.53644C315.061 10.2991 313.683 11.3698 312.568 12.7484C311.453 14.0978 310.617 15.6524 310.06 17.4124C309.503 19.1724 309.224 21.0351 309.224 23.0004C309.224 24.8191 309.503 26.6084 310.06 28.3684C310.617 30.1284 311.453 31.6978 312.568 33.0764C313.683 34.4551 315.076 35.5698 316.748 36.4204C318.449 37.2418 320.444 37.6524 322.732 37.6524C325.841 37.6524 328.452 36.8604 330.564 35.2764C332.705 33.6631 334.011 31.3751 334.48 28.4124H336.9C336.577 30.6418 335.8 32.6218 334.568 34.3524C333.365 36.0538 331.767 37.4031 329.772 38.4004C327.777 39.3684 325.431 39.8524 322.732 39.8524Z" fill="#82C3FF"/>
-<path d="M356.435 39.8524C353.531 39.8524 351.125 39.2951 349.219 38.1804C347.312 37.0364 345.889 35.4818 344.951 33.5164C344.041 31.5511 343.587 29.3071 343.587 26.7844V6.98444H345.963V27.0924C345.963 29.1751 346.344 31.0231 347.107 32.6364C347.869 34.2204 349.028 35.4524 350.583 36.3324C352.137 37.2124 354.088 37.6524 356.435 37.6524C358.84 37.6524 360.805 37.2124 362.331 36.3324C363.885 35.4524 365.029 34.2204 365.763 32.6364C366.525 31.0524 366.907 29.2044 366.907 27.0924V6.98444H369.283V26.7844C369.283 29.3071 368.828 31.5511 367.919 33.5164C367.009 35.4818 365.601 37.0364 363.695 38.1804C361.817 39.2951 359.397 39.8524 356.435 39.8524Z" fill="#82C3FF"/>
-<path d="M389.514 39.8524C386.786 39.8524 384.513 39.4271 382.694 38.5764C380.875 37.6964 379.511 36.5084 378.602 35.0124C377.693 33.4871 377.238 31.7711 377.238 29.8644H379.614C379.614 31.3311 379.951 32.6511 380.626 33.8244C381.33 34.9978 382.415 35.9364 383.882 36.6404C385.349 37.3151 387.226 37.6524 389.514 37.6524C391.655 37.6524 393.445 37.3444 394.882 36.7284C396.319 36.1124 397.39 35.2764 398.094 34.2204C398.827 33.1351 399.194 31.8884 399.194 30.4804C399.194 28.7498 398.549 27.2831 397.258 26.0804C395.967 24.8484 394.002 24.1004 391.362 23.8364L387.534 23.5284C384.865 23.2938 382.753 22.4431 381.198 20.9764C379.643 19.5098 378.866 17.5884 378.866 15.2124C378.866 13.5111 379.262 11.9858 380.054 10.6364C380.846 9.25777 382.034 8.17244 383.618 7.38044C385.202 6.5591 387.153 6.14844 389.47 6.14844C391.817 6.14844 393.797 6.58844 395.41 7.46844C397.023 8.3191 398.241 9.47777 399.062 10.9444C399.913 12.3818 400.338 14.0098 400.338 15.8284H397.962C397.962 14.5084 397.669 13.2911 397.082 12.1764C396.495 11.0324 395.571 10.1084 394.31 9.40444C393.078 8.70044 391.465 8.34844 389.47 8.34844C387.534 8.34844 385.965 8.6711 384.762 9.31644C383.559 9.93244 382.665 10.7684 382.078 11.8244C381.521 12.8511 381.242 13.9804 381.242 15.2124C381.242 16.9724 381.799 18.3804 382.914 19.4364C384.058 20.4924 385.686 21.1231 387.798 21.3284L391.626 21.6364C393.767 21.8124 395.571 22.3111 397.038 23.1324C398.534 23.9244 399.663 24.9511 400.426 26.2124C401.189 27.4738 401.57 28.8964 401.57 30.4804C401.57 32.2698 401.101 33.8831 400.162 35.3204C399.223 36.7284 397.859 37.8431 396.07 38.6644C394.281 39.4564 392.095 39.8524 389.514 39.8524Z" fill="#82C3FF"/>
-</svg></div>
       <div>
         <p class="login-title">Bom dia.<br><strong>Faça login para começar.</strong></p>
-        <p class="login-sub" style="margin-top:8px;">Conecte sua conta Google para importar eventos do Calendar automaticamente.</p>
+        <p class="login-sub">Conecte sua conta Google para importar eventos do Calendar automaticamente.</p>
       </div>
-      <button class="btn-google" onclick="loginGoogle()">
+      <button class="btn-google" id="btn-login" onclick="doLogin()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
           <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
@@ -505,301 +183,208 @@
     </div>
   </div>
 
-    <!-- Screen: Signals -->
-  <div class="screen active" id="screen-signals">
-    <div>
-      <h1>Bom dia.<br><strong id="user-name">Carregando...</strong></h1>
-      <p class="sub">Sinais capturados esta manhã</p>
-    </div>
-
-    <div class="signal-list" id="signal-list">
-      <div class="loading-state">
-        <div class="loader"></div>
-        <p class="loading-text">buscando sinais...</p>
-      </div>
-    </div>
-
+  <!-- Signals -->
+  <div class="screen" id="screen-signals">
+    <div><h1>Bom dia.<br><strong id="user-first-name">...</strong></h1><p class="sub">Sinais capturados esta manhã</p></div>
+    <div class="signal-list" id="signal-list"><div class="loading-state"><div class="loader"></div><p class="loading-text">buscando sinais...</p></div></div>
     <div class="add-signal-form">
       <div class="input-group">
         <label class="input-label">Adicionar sinal manual</label>
-        <input type="text" id="manual-signal-input" placeholder="Ex: revisar proposta Voith antes de amanhã">
+        <input type="text" id="manual-input" placeholder="Ex: revisar proposta antes de amanhã">
       </div>
-      <div class="btn-row" style="margin-top:10px;">
-        <button class="btn" onclick="addManual()">Adicionar</button>
-      </div>
+      <div class="btn-row" style="margin-top:10px;"><button class="btn" onclick="addManual()">Adicionar</button></div>
     </div>
-
-    <div class="btn-row">
-      <button class="btn btn-primary" id="btn-generate" onclick="generatePriorities()" style="flex:1;">
-        Gerar prioridades com IA
-      </button>
-    </div>
+    <div class="btn-row"><button class="btn btn-primary" id="btn-generate" onclick="generatePriorities()" style="flex:1;">Gerar prioridades com IA</button></div>
   </div>
 
-  <!-- Screen: Priorities -->
+  <!-- Priorities -->
   <div class="screen" id="screen-priorities">
-    <div>
-      <h1>Suas <strong>3 prioridades</strong><br>de hoje</h1>
-      <p class="sub">Confirme, troque ou reescreva</p>
-    </div>
-
+    <div><h1>Suas <strong>3 prioridades</strong><br>de hoje</h1><p class="sub">Confirme, troque ou reescreva</p></div>
     <div class="priority-list" id="priority-list"></div>
-
     <div class="override-area" id="override-area">
       <div class="input-group">
         <label class="input-label">Substituir uma prioridade por:</label>
-        <textarea id="override-input" rows="2" placeholder="Descreva a prioridade que quer adicionar..."></textarea>
+        <textarea id="override-input" rows="2" placeholder="Descreva a prioridade..."></textarea>
       </div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="submitOverride()">Confirmar com substituição</button>
         <button class="btn" onclick="toggleOverride()">Cancelar</button>
       </div>
     </div>
-
     <div class="divider"></div>
-
     <div class="btn-row">
       <button class="btn btn-primary" onclick="confirmAll()" style="flex:1;">Confirmar as 3</button>
       <button class="btn" onclick="toggleOverride()">Substituir uma</button>
     </div>
   </div>
 
-  <!-- Screen: Confirmed -->
+  <!-- Confirmed -->
   <div class="screen" id="screen-confirmed">
-    <div>
-      <h1>Foco do dia<br><strong>definido</strong></h1>
-      <p class="sub">Check-in de encerramento às 18h30</p>
-    </div>
+    <div><h1>Foco do dia<br><strong>definido</strong></h1><p class="sub">Check-in de encerramento às 18h30</p></div>
     <div class="confirmed-list" id="confirmed-list"></div>
     <div class="divider"></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="openCheckin()" style="flex:1;">Fazer check-in agora</button>
-    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="openCheckin()" style="flex:1;">Fazer check-in agora</button></div>
   </div>
 
-  <!-- Screen: Check-in -->
+  <!-- Check-in -->
   <div class="screen" id="screen-checkin">
-    <div>
-      <h1>Check-in<br><strong>do dia</strong></h1>
-      <p class="sub">O que você concluiu hoje?</p>
-    </div>
+    <div><h1>Check-in<br><strong>do dia</strong></h1><p class="sub">O que você concluiu hoje?</p></div>
     <div id="checkin-list" class="confirmed-list"></div>
     <div class="input-group">
       <label class="input-label">Notas (opcional)</label>
-      <textarea id="checkin-notes" rows="3" placeholder="O que travou? O que foi diferente do esperado?"></textarea>
+      <textarea id="checkin-notes" rows="3" placeholder="O que travou? O que foi diferente?"></textarea>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="submitCheckin()" style="flex:1;">Encerrar dia</button>
-    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="submitCheckin()" style="flex:1;">Encerrar dia</button></div>
   </div>
 
-  <!-- Screen: Done -->
+  <!-- Done -->
   <div class="screen" id="screen-done">
-    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:16px;">
-      <div style="font-size:32px; color:var(--success); font-family:var(--mono);">✓</div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;">
+      <div style="font-size:32px;color:var(--success);font-family:var(--mono);">✓</div>
       <h1>Dia<br><strong>encerrado</strong></h1>
       <p class="sub">Dados salvos. Até amanhã.</p>
     </div>
-    <div class="btn-row">
-      <button class="btn" onclick="resetDay()" style="flex:1;">Nova sessão (dev)</button>
+    <div class="btn-row"><button class="btn" onclick="showScreen('screen-signals')" style="flex:1;">Nova sessão</button></div>
+  </div>
+
+  <!-- History -->
+  <div class="screen" id="screen-history">
+    <div><h1>Seu <strong>histórico</strong></h1><p class="sub">Últimos 7 dias de produtividade</p></div>
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">TAXA MÉDIA</div><div class="metric-value" id="hist-avg">—</div><div class="metric-sub">de conclusão semanal</div></div>
+      <div class="metric-card"><div class="metric-label">OVERRIDES</div><div class="metric-value" id="hist-overrides">—</div><div class="metric-sub">substituições esta semana</div></div>
     </div>
+    <div><p class="sub" style="margin-bottom:10px;">Conclusão por dia</p><div class="chart-bar-wrap" id="hist-chart"></div></div>
+    <div><p class="sub" style="margin-bottom:10px;">Prioridades que mais se repetem</p><div id="hist-repeats" style="display:flex;flex-direction:column;gap:8px;"></div></div>
+  </div>
+
+  <!-- Slack -->
+  <div class="screen" id="screen-slack">
+    <div><h1>Suas <strong>menções</strong></h1><p class="sub">Mensagens do Slack que precisam de atenção</p></div>
+    <div id="slack-content"><div class="loading-state"><div class="loader"></div><p class="loading-text">buscando menções...</p></div></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="loadSlackMentions()" style="flex:1;">Atualizar menções</button></div>
   </div>
 </div>
-
-  <!-- Screen: History -->
-  <div class="screen" id="screen-history">
-    <div>
-      <h1>Seu <strong>histórico</strong></h1>
-      <p class="sub">Últimos 7 dias de produtividade</p>
-    </div>
-
-    <div class="metric-grid">
-      <div class="metric-card">
-        <div class="metric-label">TAXA MÉDIA</div>
-        <div class="metric-value" id="hist-avg">—</div>
-        <div class="metric-sub">de conclusão semanal</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">OVERRIDES</div>
-        <div class="metric-value" id="hist-overrides">—</div>
-        <div class="metric-sub">substituições esta semana</div>
-      </div>
-    </div>
-
-    <div>
-      <p class="sub" style="margin-bottom:10px;">Conclusão por dia</p>
-      <div class="chart-bar-wrap" id="hist-chart"></div>
-    </div>
-
-    <div>
-      <p class="sub" style="margin-bottom:10px;">Prioridades que mais se repetem</p>
-      <div id="hist-repeats" style="display:flex;flex-direction:column;gap:8px;"></div>
-    </div>
-  </div>
-
-  <!-- Screen: Slack -->
-  <div class="screen" id="screen-slack">
-    <div>
-      <h1>Suas <strong>menções</strong></h1>
-      <p class="sub">Mensagens do Slack que precisam de atenção</p>
-    </div>
-    <div id="slack-content">
-      <div class="slack-loading">
-        <div class="loader"></div>
-        <p class="loading-text">buscando menções...</p>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="loadSlackMentions()" style="flex:1;">Atualizar menções</button>
-    </div>
-  </div>
 
 <div id="toast"></div>
 
 <script type="module">
   const SUPABASE_URL = "https://youzviccikxugydzfcmi.supabase.co"
-  const SUPABASE_ANON_KEY = "sb_publishable_FQpzc5wUH8Th21TABI4OXA_b5bD3Mhs"
-  const MOCK_MODE = false
-  const GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly"
+  const SUPABASE_KEY = "sb_publishable_FQpzc5wUH8Th21TABI4OXA_b5bD3Mhs"
+  const REDIRECT_URL = "https://hosben.github.io/cogtive-focus/"
+  const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly"
 
-  // Init Supabase client
   const { createClient } = supabase
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-  let state = {
-    userId: null,
-    userName: "Bruno",
-    userEmail: null,
-    accessToken: null,
-    signals: [],
-    priorities: [],
-    sessionId: null,
-    confirmedRanks: new Set(),
-    checkinDone: new Set(),
+  let state = { userId: null, userName: "...", accessToken: null, signals: [], priorities: [], confirmedRanks: new Set(), checkinDone: new Set() }
+
+  // ---- Clock ----
+  function updateClock() {
+    const now = new Date()
+    const days = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"]
+    const months = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"]
+    const hh = String(now.getHours()).padStart(2,"0")
+    const mm = String(now.getMinutes()).padStart(2,"0")
+    const ss = String(now.getSeconds()).padStart(2,"0")
+    document.getElementById("nav-date").innerHTML = days[now.getDay()] + ", " + now.getDate() + " de " + months[now.getMonth()] + " de " + now.getFullYear() + "<br>" + hh + ":" + mm + ":" + ss
+  }
+  updateClock()
+  setInterval(updateClock, 1000)
+
+  // ---- Screen ----
+  function showScreen(id) {
+    document.querySelectorAll(".screen, .login-screen").forEach(s => s.classList.remove("active"))
+    document.getElementById(id).classList.add("active")
+    window.scrollTo(0, 0)
+  }
+
+  // ---- Tabs ----
+  window.switchTab = function(tab) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"))
+    document.getElementById("tab-" + tab).classList.add("active")
+    if (tab === "focus") showScreen("screen-signals")
+    else if (tab === "history") { showScreen("screen-history"); loadHistory() }
+    else if (tab === "slack") { showScreen("screen-slack"); loadSlackMentions() }
   }
 
   // ---- Auth ----
-
-  window.loginGoogle = async function() {
+  window.doLogin = async function() {
+    const btn = document.getElementById("btn-login")
+    btn.textContent = "Abrindo Google..."
+    btn.disabled = true
     const { error } = await sb.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        scopes: GOOGLE_CALENDAR_SCOPE,
-        redirectTo: "https://hosben.github.io/cogtive-focus/",
-        queryParams: { access_type: "offline", prompt: "consent" }
-      }
+      options: { scopes: CALENDAR_SCOPE, redirectTo: REDIRECT_URL, queryParams: { access_type: "offline", prompt: "consent" } }
     })
-    if (error) toast("Erro no login: " + error.message)
+    if (error) { toast("Erro: " + error.message); btn.textContent = "Entrar com Google"; btn.disabled = false }
   }
 
-  window.signOut = async function() {
+  window.doSignOut = async function() {
     await sb.auth.signOut()
-    state.userId = null
-    state.accessToken = null
-    showScreen("screen-login")
     document.getElementById("user-bar").style.display = "none"
     document.getElementById("tab-bar").style.display = "none"
+    showScreen("screen-login")
   }
 
   async function checkAuth() {
     const { data: { session } } = await sb.auth.getSession()
-    if (session) {
-      state.userId = session.user.id
-      state.userEmail = session.user.email
-      state.accessToken = session.provider_token // Google OAuth token for Calendar
-      const name = session.user.user_metadata?.full_name || session.user.email.split("@")[0]
-      state.userName = name.split(" ")[0]
-      updateUserBar(session.user)
-      return true
-    }
-    return false
-  }
-
-  function updateUserBar(user) {
+    if (!session) return false
+    state.userId = session.user.id
+    state.accessToken = session.provider_token
+    const name = (session.user.user_metadata?.full_name || session.user.email).split(" ")[0]
+    state.userName = name
     const bar = document.getElementById("user-bar")
     const avatar = document.getElementById("user-avatar")
-    const nameEl = document.getElementById("user-name-nav")
+    const emailEl = document.getElementById("user-email")
     bar.style.display = "flex"
-    nameEl.textContent = user.email
-    if (user.user_metadata?.avatar_url) {
-      avatar.innerHTML = '<img src="' + user.user_metadata.avatar_url + '" alt="">'
-    } else {
-      avatar.textContent = (user.email[0] || "U").toUpperCase()
-    }
-  }
-
-  // ---- Calendar ----
-
-  async function fetchCalendarSignals() {
-    if (!state.accessToken) return []
-    const now = new Date()
-    const timeMin = new Date(now); timeMin.setDate(timeMin.getDate() - 1)
-    const timeMax = new Date(now); timeMax.setHours(23, 59, 59)
-    const params = new URLSearchParams({
-      timeMin: timeMin.toISOString(),
-      timeMax: timeMax.toISOString(),
-      singleEvents: "true",
-      orderBy: "startTime",
-      maxResults: "15",
-    })
-    try {
-      const res = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events?" + params, {
-        headers: { Authorization: "Bearer " + state.accessToken }
-      })
-      if (!res.ok) { console.warn("Calendar error:", res.status); return [] }
-      const data = await res.json()
-      return (data.items || []).map(event => {
-        const start = event.start?.dateTime || event.start?.date
-        const hoursUntil = (new Date(start).getTime() - now.getTime()) / 36e5
-        const urgency = hoursUntil < 2 ? 85 : hoursUntil < 6 ? 65 : hoursUntil < 0 ? 40 : 25
-        return {
-          id: "cal-" + event.id,
-          source: "google_calendar",
-          title: event.summary || "Evento sem título",
-          description: new Date(start).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) + (event.description ? " — " + event.description.slice(0, 80) : ""),
-          urgency_hint: urgency,
-          date: now.toISOString().split("T")[0]
-        }
-      })
-    } catch(e) {
-      console.warn("Calendar fetch failed:", e)
-      return []
-    }
+    emailEl.textContent = session.user.email
+    if (session.user.user_metadata?.avatar_url) avatar.innerHTML = "<img src='" + session.user.user_metadata.avatar_url + "' alt=''>"
+    else avatar.textContent = session.user.email[0].toUpperCase()
+    document.getElementById("tab-bar").style.display = "flex"
+    return session
   }
 
   // ---- Signals ----
-
   async function loadSignals() {
-    const list = document.getElementById("signal-list")
-    list.innerHTML = '<div class="loading-state"><div class="loader"></div><p class="loading-text">buscando sinais...</p></div>'
-    const calSignals = await fetchCalendarSignals()
-    state.signals = calSignals.length > 0 ? calSignals : getMockSignals()
+    const el = document.getElementById("signal-list")
+    el.innerHTML = "<div class='loading-state'><div class='loader'></div><p class='loading-text'>buscando sinais...</p></div>"
+    const calSignals = state.accessToken ? await fetchCalendar() : []
+    state.signals = calSignals.length > 0 ? calSignals : []
     renderSignals()
   }
 
-  function getMockSignals() {
-    return [
-      { id: "s1", source: "google_calendar", title: "Nenhum evento encontrado no Calendar", description: "Adicione sinais manualmente abaixo", urgency_hint: 20 },
-    ]
+  async function fetchCalendar() {
+    try {
+      const now = new Date()
+      const timeMin = new Date(now); timeMin.setDate(timeMin.getDate() - 1)
+      const timeMax = new Date(now); timeMax.setHours(23,59,59)
+      const params = new URLSearchParams({ timeMin: timeMin.toISOString(), timeMax: timeMax.toISOString(), singleEvents: "true", orderBy: "startTime", maxResults: "15" })
+      const res = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events?" + params, { headers: { Authorization: "Bearer " + state.accessToken } })
+      if (!res.ok) return []
+      const data = await res.json()
+      return (data.items || []).map(e => {
+        const start = e.start?.dateTime || e.start?.date
+        const h = (new Date(start).getTime() - now.getTime()) / 36e5
+        return { id: "cal-" + e.id, source: "google_calendar", title: e.summary || "Evento sem título", description: new Date(start).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }), urgency_hint: h < 2 ? 85 : h < 6 ? 65 : 30 }
+      })
+    } catch(e) { return [] }
   }
 
   function renderSignals() {
-    const list = document.getElementById("signal-list")
-    const iconMap = { google_calendar: ["CAL", "cal"], slack: ["SLK", "slack"], manual: ["YOU", "manual"] }
-    list.innerHTML = state.signals.map(s => {
-      const [icon, cls] = iconMap[s.source] || ["?", "manual"]
-      return '<div class="signal-card fade-in">' +
-        '<div class="signal-icon ' + cls + '">' + icon + '</div>' +
-        '<div style="flex:1;">' +
-          '<div class="signal-title">' + s.title + '</div>' +
-          '<div class="signal-desc">' + (s.description || "") + '</div>' +
-          '<div class="urgency-bar"><div class="urgency-fill" style="width:' + s.urgency_hint + '%"></div></div>' +
-        '</div></div>'
+    const el = document.getElementById("signal-list")
+    const firstName = document.getElementById("user-first-name")
+    if (firstName) firstName.textContent = state.userName
+    if (state.signals.length === 0) { el.innerHTML = "<p style='font-size:13px;color:var(--text-muted);padding:20px 0;'>Nenhum sinal automático. Adicione manualmente abaixo.</p>"; return }
+    const icons = { google_calendar: ["CAL","cal"], slack: ["SLK","slack"], manual: ["YOU","manual"] }
+    el.innerHTML = state.signals.map(s => {
+      const [icon, cls] = icons[s.source] || ["?","manual"]
+      return "<div class='signal-card fade-in'><div class='signal-icon " + cls + "'>" + icon + "</div><div style='flex:1'><div class='signal-title'>" + s.title + "</div><div class='signal-desc'>" + (s.description||"") + "</div><div class='urgency-bar'><div class='urgency-fill' style='width:" + s.urgency_hint + "%'></div></div></div></div>"
     }).join("")
   }
 
   window.addManual = function() {
-    const input = document.getElementById("manual-signal-input")
+    const input = document.getElementById("manual-input")
     const val = input.value.trim()
     if (!val) return
     state.signals.push({ id: "m" + Date.now(), source: "manual", title: val, description: "Adicionado manualmente", urgency_hint: 50 })
@@ -808,305 +393,140 @@
     toast("Sinal adicionado")
   }
 
-  // ---- Generate priorities ----
-
+  // ---- Generate ----
   window.generatePriorities = async function() {
     const btn = document.getElementById("btn-generate")
     btn.textContent = "Gerando..."
     btn.disabled = true
     try {
       const { data: { session } } = await sb.auth.getSession()
-      if (!session) throw new Error("Sessão expirada. Faça login novamente.")
+      if (!session) throw new Error("Sessão expirada")
       const res = await fetch(SUPABASE_URL + "/functions/v1/priorities", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + session.access_token,
-          "apikey": SUPABASE_ANON_KEY,
-        },
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_KEY },
         body: JSON.stringify({ signals: state.signals, date: new Date().toISOString().split("T")[0] })
       })
-      const responseText = await res.text()
-      if (!res.ok) throw new Error("Edge Function: " + responseText)
-      const data = JSON.parse(responseText)
+      const text = await res.text()
+      if (!res.ok) throw new Error(text)
+      const data = JSON.parse(text)
       state.priorities = data.priorities
-      state.sessionId = data.session_id
-    } catch(e) {
-      toast("Erro ao gerar: " + e.message)
-      btn.textContent = "Gerar prioridades com IA"
-      btn.disabled = false
-      return
-    }
-    renderPriorities()
-    showScreen("screen-priorities")
+      renderPriorities()
+      showScreen("screen-priorities")
+    } catch(e) { toast("Erro: " + e.message) }
     btn.textContent = "Gerar prioridades com IA"
     btn.disabled = false
   }
 
   // ---- Priorities ----
-
   function renderPriorities() {
-    const badgeClass = {
-      "urgência alta": "badge-danger",
-      "impacto direto": "badge-info",
-      "dependência de time": "badge-warning",
-      "fricção acumulada": "badge-warning",
-      "prazo hoje": "badge-danger",
-    }
+    const bc = { "urgência alta": "badge-danger", "impacto direto": "badge-info", "dependência de time": "badge-warning", "fricção acumulada": "badge-warning", "prazo hoje": "badge-danger" }
     document.getElementById("priority-list").innerHTML = state.priorities.map(p =>
-      '<div class="priority-card" id="pc-' + p.rank + '" onclick="togglePriority(' + p.rank + ')">' +
-        '<div class="p-header">' +
-          '<span class="p-rank">' + p.rank + '.</span>' +
-          '<span class="p-title">' + p.title + '</span>' +
-          '<span class="p-check">✓</span>' +
-        '</div>' +
-        '<div class="p-reason">' + p.reason + '</div>' +
-        '<div class="p-footer">' +
-          '<span class="badge ' + (badgeClass[p.badge] || "badge-info") + '">' + p.badge + '</span>' +
-          '<span class="p-score">' + p.score + '</span>' +
-        '</div>' +
-        '<div class="score-bar"><div class="score-fill" style="width:' + p.score + '%"></div></div>' +
-      '</div>'
+      "<div class='priority-card' id='pc-" + p.rank + "' onclick='togglePriority(" + p.rank + ")'>" +
+      "<div class='p-header'><span class='p-rank'>" + p.rank + ".</span><span class='p-title'>" + p.title + "</span><span class='p-check'>✓</span></div>" +
+      "<div class='p-reason'>" + p.reason + "</div>" +
+      "<div class='p-footer'><span class='badge " + (bc[p.badge]||"badge-info") + "'>" + p.badge + "</span><span class='p-score'>" + p.score + "</span></div>" +
+      "<div class='score-bar'><div class='score-fill' style='width:" + p.score + "%'></div></div></div>"
     ).join("")
   }
 
   window.togglePriority = function(rank) {
-    if (state.confirmedRanks.has(rank)) {
-      state.confirmedRanks.delete(rank)
-      document.getElementById("pc-" + rank).classList.remove("confirmed")
-    } else {
-      state.confirmedRanks.add(rank)
-      document.getElementById("pc-" + rank).classList.add("confirmed")
-    }
+    if (state.confirmedRanks.has(rank)) { state.confirmedRanks.delete(rank); document.getElementById("pc-"+rank).classList.remove("confirmed") }
+    else { state.confirmedRanks.add(rank); document.getElementById("pc-"+rank).classList.add("confirmed") }
   }
 
-  window.toggleOverride = function() {
-    document.getElementById("override-area").classList.toggle("open")
-  }
+  window.toggleOverride = function() { document.getElementById("override-area").classList.toggle("open") }
 
-  window.submitOverride = async function() {
+  window.submitOverride = function() {
     const val = document.getElementById("override-input").value.trim()
     if (!val) return
-    const replacedRank = [1,2,3].find(r => !state.confirmedRanks.has(r)) || 3
-    state.priorities = state.priorities.filter(p => p.rank !== replacedRank)
-    state.priorities.push({ rank: replacedRank, title: val, reason: "Adicionado manualmente", score: 50, badge: "impacto direto", source_signal_ids: [] })
-    state.confirmedRanks.add(replacedRank)
+    const rank = [1,2,3].find(r => !state.confirmedRanks.has(r)) || 3
+    state.priorities = state.priorities.filter(p => p.rank !== rank)
+    state.priorities.push({ rank, title: val, reason: "Adicionado manualmente", score: 50, badge: "impacto direto" })
+    state.confirmedRanks.add(rank)
     document.getElementById("override-input").value = ""
     document.getElementById("override-area").classList.remove("open")
-    renderConfirmed()
-    showScreen("screen-confirmed")
+    renderConfirmed(); showScreen("screen-confirmed")
     toast("Substituição registrada")
   }
 
-  window.confirmAll = async function() {
-    state.confirmedRanks = new Set([1, 2, 3])
-    renderConfirmed()
-    showScreen("screen-confirmed")
+  window.confirmAll = function() {
+    state.confirmedRanks = new Set([1,2,3])
+    renderConfirmed(); showScreen("screen-confirmed")
     toast("Prioridades confirmadas")
   }
 
   function renderConfirmed() {
-    const confirmed = state.priorities.filter(p => state.confirmedRanks.has(p.rank)).sort((a,b) => a.rank - b.rank)
-    document.getElementById("confirmed-list").innerHTML = confirmed.map(p =>
-      '<div class="confirmed-item">' +
-        '<span class="confirmed-rank">' + p.rank + '.</span>' +
-        '<span style="font-size:13px;">' + p.title + '</span>' +
-      '</div>'
+    const list = state.priorities.filter(p => state.confirmedRanks.has(p.rank)).sort((a,b) => a.rank - b.rank)
+    document.getElementById("confirmed-list").innerHTML = list.map(p =>
+      "<div class='confirmed-item'><span class='confirmed-rank'>" + p.rank + ".</span><span style='font-size:13px'>" + p.title + "</span></div>"
     ).join("")
   }
 
   window.openCheckin = function() {
-    const confirmed = state.priorities.filter(p => state.confirmedRanks.has(p.rank)).sort((a,b) => a.rank - b.rank)
-    const list = confirmed.length > 0 ? confirmed : state.priorities.slice().sort((a,b) => a.rank - b.rank)
-    document.getElementById("checkin-list").innerHTML = list.map(function(p) {
-      return '<div class="checkin-item" id="ci-' + p.rank + '" onclick="toggleCheckin(' + p.rank + ')">' +
-        '<div class="checkin-box" id="cbox-' + p.rank + '"></div>' +
-        '<span style="font-size:13px;">' + p.title + '</span>' +
-        '</div>'
-    }).join("")
+    const list = state.priorities.filter(p => state.confirmedRanks.has(p.rank)).sort((a,b) => a.rank - b.rank)
+    const items = list.length > 0 ? list : state.priorities.slice().sort((a,b) => a.rank - b.rank)
+    document.getElementById("checkin-list").innerHTML = items.map(p =>
+      "<div class='checkin-item' id='ci-" + p.rank + "' onclick='toggleCheckin(" + p.rank + ")'><div class='checkin-box' id='cbox-" + p.rank + "'></div><span style='font-size:13px'>" + p.title + "</span></div>"
+    ).join("")
     showScreen("screen-checkin")
   }
 
   window.toggleCheckin = function(rank) {
-    const item = document.getElementById("ci-" + rank)
-    const box = document.getElementById("cbox-" + rank)
-    if (state.checkinDone.has(rank)) {
-      state.checkinDone.delete(rank)
-      item.classList.remove("done")
-      box.textContent = ""
-    } else {
-      state.checkinDone.add(rank)
-      item.classList.add("done")
-      box.textContent = "✓"
-    }
+    const item = document.getElementById("ci-"+rank)
+    const box = document.getElementById("cbox-"+rank)
+    if (state.checkinDone.has(rank)) { state.checkinDone.delete(rank); item.classList.remove("done"); box.textContent = "" }
+    else { state.checkinDone.add(rank); item.classList.add("done"); box.textContent = "✓" }
   }
 
-  window.submitCheckin = async function() {
-    showScreen("screen-done")
-    toast("Dia encerrado. Até amanhã.")
-  }
-
-  window.resetDay = function() {
-    state.confirmedRanks = new Set()
-    state.checkinDone = new Set()
-    loadSignals()
-    showScreen("screen-signals")
-  }
-
-  // ---- Helpers ----
-
-  function showScreen(id) {
-    trackFocusScreen(id)
-    document.querySelectorAll(".screen, .login-screen").forEach(s => s.classList.remove("active"))
-    document.getElementById(id).classList.add("active")
-    window.scrollTo(0, 0)
-  }
-
-  function toast(msg) {
-    const t = document.getElementById("toast")
-    t.textContent = msg
-    t.classList.add("show")
-    setTimeout(() => t.classList.remove("show"), 2800)
-  }
-
-  function updateClock() {
-    const now = new Date()
-    const weekdays = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"]
-    const months = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"]
-    const weekday = weekdays[now.getDay()]
-    const day = now.getDate()
-    const month = months[now.getMonth()]
-    const year = now.getFullYear()
-    const hh = String(now.getHours()).padStart(2, "0")
-    const mm = String(now.getMinutes()).padStart(2, "0")
-    const ss = String(now.getSeconds()).padStart(2, "0")
-    const el = document.getElementById("nav-date")
-    el.innerHTML = weekday + ", " + day + " de " + month + " de " + year + "<br>" + hh + ":" + mm + ":" + ss
-  }
-  updateClock()
-  setInterval(updateClock, 1000)
-
-  // ---- Init ----
-
-  async function init() {
-    const loggedIn = await checkAuth()
-    if (loggedIn) {
-      document.getElementById("user-name-display") && (document.getElementById("user-name-display").textContent = state.userName)
-      document.getElementById("tab-bar").style.display = "flex"
-      showScreen("screen-signals")
-      await loadSignals()
-    } else {
-      showScreen("screen-login")
-    }
-  }
-
-  // ---- Tab navigation ----
-
-  window.switchTab = function(tab) {
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"))
-    document.getElementById("tab-" + tab).classList.add("active")
-
-    if (tab === "focus") {
-      // Show current focus screen (signals or priorities or confirmed)
-      const active = ["screen-signals","screen-priorities","screen-confirmed","screen-checkin","screen-done"]
-        .find(s => document.getElementById(s)?.classList.contains("was-active")) || "screen-signals"
-      showScreen(active)
-    } else if (tab === "history") {
-      showScreen("screen-history")
-      loadHistory()
-    } else if (tab === "slack") {
-      showScreen("screen-slack")
-      loadSlackMentions()
-    }
-  }
+  window.submitCheckin = function() { showScreen("screen-done"); toast("Dia encerrado. Até amanhã.") }
 
   // ---- History ----
-
-  async function loadHistory() {
-    // Mock data — replace with Supabase query when checkins are being saved
+  function loadHistory() {
     const days = [
-      { label: "Seg", pct: 100 },
-      { label: "Ter", pct: 67 },
-      { label: "Qua", pct: 33 },
-      { label: "Qui", pct: 100 },
-      { label: "Sex", pct: 67 },
-      { label: "Sáb", pct: 0 },
-      { label: "Dom", pct: 0 },
+      { label: "Seg", pct: 100 }, { label: "Ter", pct: 67 }, { label: "Qua", pct: 33 },
+      { label: "Qui", pct: 100 }, { label: "Sex", pct: 67 }, { label: "Sáb", pct: 0 }, { label: "Dom", pct: 0 }
     ]
-
     const withData = days.filter(d => d.pct > 0)
-    const avg = withData.length > 0
-      ? Math.round(withData.reduce((s,d) => s + d.pct, 0) / withData.length)
-      : 0
-
+    const avg = Math.round(withData.reduce((s,d) => s + d.pct, 0) / withData.length)
     document.getElementById("hist-avg").textContent = avg + "%"
     document.getElementById("hist-overrides").textContent = "2"
-
     document.getElementById("hist-chart").innerHTML = days.map(d =>
-      '<div class="chart-day">' +
-        '<span class="chart-day-label">' + d.label + '</span>' +
-        '<div class="chart-day-bar"><div class="chart-day-fill" style="width:' + d.pct + '%"></div></div>' +
-        '<span class="chart-day-pct">' + d.pct + '%</span>' +
-      '</div>'
+      "<div class='chart-day'><span class='chart-day-label'>" + d.label + "</span><div class='chart-day-bar'><div class='chart-day-fill' style='width:" + d.pct + "%'></div></div><span class='chart-day-pct'>" + d.pct + "%</span></div>"
     ).join("")
-
-    const repeats = [
+    document.getElementById("hist-repeats").innerHTML = [
       { title: "Revisar proposta com cliente", count: "3x" },
       { title: "Responder mensagens urgentes no Slack", count: "2x" },
       { title: "Preparar material para reunião", count: "2x" },
-    ]
-
-    document.getElementById("hist-repeats").innerHTML = repeats.map(r =>
-      '<div class="repeat-item">' +
-        '<span class="repeat-count">' + r.count + '</span>' +
-        '<span class="repeat-title">' + r.title + '</span>' +
-      '</div>'
-    ).join("")
+    ].map(r => "<div class='repeat-item'><span class='repeat-count'>" + r.count + "</span><span class='repeat-title'>" + r.title + "</span></div>").join("")
   }
 
-  // ---- Slack mentions ----
-
+  // ---- Slack ----
   window.loadSlackMentions = async function() {
     const el = document.getElementById("slack-content")
-    el.innerHTML = '<div class="slack-loading"><div class="loader"></div><p class="loading-text">buscando menções...</p></div>'
-
-    // Mock data — replace with real Slack API call after connecting token
-    await new Promise(r => setTimeout(r, 1200))
-
+    el.innerHTML = "<div class='loading-state'><div class='loader'></div><p class='loading-text'>buscando menções...</p></div>"
+    await new Promise(r => setTimeout(r, 1000))
     const mentions = [
       { channel: "#produto", sender: "Rafael Orpinelli", text: "Bruno, preciso da sua decisão sobre o módulo de OEE antes da reunião de amanhã.", time: "ontem 18:42" },
       { channel: "#vendas", sender: "Camila Santos", text: "Bruno você toparia fazer uma call rápida com o prospect da Voith esta semana?", time: "hoje 07:15" },
       { channel: "#geral", sender: "Lucas Henrique", text: "Bruno qual o status do deploy do agente de design? O time está esperando.", time: "hoje 08:01" },
     ]
-
-    if (mentions.length === 0) {
-      el.innerHTML = '<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:40px 0;">Nenhuma menção encontrada.</p>'
-      return
-    }
-
-    el.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px;">' +
-      mentions.map(m =>
-        '<div class="slack-msg">' +
-          '<div class="slack-channel">' + m.channel + '</div>' +
-          '<div class="slack-sender">' + m.sender + '</div>' +
-          '<div class="slack-text">' + m.text + '</div>' +
-          '<div class="slack-time">' + m.time + '</div>' +
-        '</div>'
-      ).join("") +
-    '</div>'
+    el.innerHTML = "<div style='display:flex;flex-direction:column;gap:10px;'>" +
+      mentions.map(m => "<div class='slack-msg'><div class='slack-channel'>" + m.channel + "</div><div class='slack-sender'>" + m.sender + "</div><div class='slack-text'>" + m.text + "</div><div class='slack-time'>" + m.time + "</div></div>").join("") +
+    "</div>"
   }
 
-  // Track active focus screen for tab switching
-  function trackFocusScreen(id) {
-    const focusScreens = ["screen-signals","screen-priorities","screen-confirmed","screen-checkin","screen-done"]
-    if (focusScreens.includes(id)) {
-      focusScreens.forEach(s => {
-        const el = document.getElementById(s)
-        if (el) el.classList.remove("was-active")
-      })
-      const el = document.getElementById(id)
-      if (el) el.classList.add("was-active")
-    }
+  // ---- Helpers ----
+  function toast(msg) {
+    const t = document.getElementById("toast")
+    t.textContent = msg; t.classList.add("show")
+    setTimeout(() => t.classList.remove("show"), 2800)
+  }
+
+  // ---- Init ----
+  async function init() {
+    const session = await checkAuth()
+    if (session) { showScreen("screen-signals"); await loadSignals() }
+    else showScreen("screen-login")
   }
 
   init()
