@@ -956,6 +956,7 @@
   // ---- Helpers ----
 
   function showScreen(id) {
+    trackFocusScreen(id)
     document.querySelectorAll(".screen, .login-screen").forEach(s => s.classList.remove("active"))
     document.getElementById(id).classList.add("active")
     window.scrollTo(0, 0)
@@ -1095,9 +1096,8 @@
     '</div>'
   }
 
-  // Override showScreen to track focus screens for tab switching
-  const _origShowScreen = showScreen
-  function showScreen(id) {
+  // Track active focus screen for tab switching
+  function trackFocusScreen(id) {
     const focusScreens = ["screen-signals","screen-priorities","screen-confirmed","screen-checkin","screen-done"]
     if (focusScreens.includes(id)) {
       focusScreens.forEach(s => {
@@ -1107,9 +1107,6 @@
       const el = document.getElementById(id)
       if (el) el.classList.add("was-active")
     }
-    document.querySelectorAll(".screen, .login-screen").forEach(s => s.classList.remove("active"))
-    document.getElementById(id).classList.add("active")
-    window.scrollTo(0, 0)
   }
 
   init()
